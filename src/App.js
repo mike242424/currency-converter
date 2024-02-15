@@ -5,15 +5,14 @@ function App() {
   const [inputCurrency, setInputCurrency] = useState('USD');
   const [outputCurrency, setOutputCurrency] = useState('USD');
   const [output, setOutput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(
     function () {
       async function fetchConversion() {
         if (!amount) return;
-        if (inputCurrency === outputCurrency) {
-          setOutput(amount);
-          return;
-        }
+
+        setIsLoading(true);
 
         const res = await fetch(
           `https://api.frankfurter.app/latest?amount=${amount}&from=${inputCurrency}&to=${outputCurrency}`,
@@ -22,7 +21,12 @@ function App() {
         const data = await res.json();
 
         setOutput(data.rates[outputCurrency]);
-        // setOutput(data.rates);
+        setIsLoading(false);
+      }
+
+      if (inputCurrency === outputCurrency) {
+        setOutput(amount);
+        return;
       }
 
       fetchConversion();
@@ -39,10 +43,12 @@ function App() {
         onChange={(e) => {
           setAmount(e.target.value);
         }}
+        disabled={isLoading}
       />
       <select
         value={inputCurrency}
         onChange={(e) => setInputCurrency(e.target.value)}
+        disabled={isLoading}
       >
         <option value="USD">USD</option>
         <option value="EUR">EUR</option>
@@ -52,15 +58,14 @@ function App() {
       <select
         value={outputCurrency}
         onChange={(e) => setOutputCurrency(e.target.value)}
+        disabled={isLoading}
       >
         <option value="USD">USD</option>
         <option value="EUR">EUR</option>
         <option value="CAD">CAD</option>
         <option value="INR">INR</option>
       </select>
-      <p>
-        {output} {outputCurrency}
-      </p>
+      <p>{isLoading ? 'Loading' : `${output} ${outputCurrency}`}</p>
     </div>
   );
 }
